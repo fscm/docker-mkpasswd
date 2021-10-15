@@ -5,7 +5,7 @@ A small image that can be used to run the `mkpasswd` tool from the
 
 ## Supported tags
 
-- `latest`
+- [`latest`](https://github.com/fscm/docker-mkpasswd/blob/master/Dockerfile)
 
 ## What is mkpasswd?
 
