@@ -1,6 +1,7 @@
 # global args
 ARG __BUILD_DIR__="/build"
 ARG __WORK_DIR__="/work"
+ARG WHOIS_VERSION="5.5.10"
 
 
 
@@ -8,7 +9,7 @@ FROM fscm/centos:stream as build
 
 ARG __BUILD_DIR__
 ARG __WORK_DIR__
-ARG WHOIS_VERSION="5.5.10"
+ARG WHOIS_VERSION
 ARG __USER__="root"
 ARG __SOURCE_DIR__="${__WORK_DIR__}/src"
 
@@ -137,12 +138,23 @@ FROM scratch
 
 ARG __BUILD_DIR__
 ARG __WORK_DIR__
+ARG WHOIS_VERSION
 
 LABEL \
   maintainer="Frederico Martins <https://hub.docker.com/u/fscm/>" \
   vendor="fscm" \
-  cmd="docker container run --detach --publish 53:53/udp fscm/mkpasswd" \
-  params="--volume ./:${__WORK_DIR__}:rw"
+  cmd="docker container run --rm --interactive --tty fscm/mkpasswd" \
+  params="--volume $$PWD:${__WORK_DIR__}:rw" \
+  org.label-schema.schema-version="1.0" \
+  org.label-schema.name="fscm/mkpasswd" \
+  org.label-schema.description="A small image that can be used to run the mkpasswd tool" \
+  org.label-schema.url="https://github.com/rfc1036/whois/" \
+  org.label-schema.vcs-url="https://github.com/fscm/docker-mkpasswd/" \
+  org.label-schema.vendor="fscm" \
+  org.label-schema.version=${WHOIS_VERSION} \
+  org.label-schema.docker.cmd="docker container run --interactive --rm --tty fscm/mkpasswd" \
+  org.label-schema.docker.cmd.test="docker container run --interactive --rm --tty fscm/mkpasswd --version" \
+  org.label-schema.docker.params="--volume $$PWD:${__WORK_DIR__}:rw"
 
 COPY --from=build "${__BUILD_DIR__}" "/"
 
