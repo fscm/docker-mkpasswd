@@ -1,11 +1,11 @@
 # global args
 ARG __BUILD_DIR__="/build"
 ARG __WORK_DIR__="/work"
-ARG WHOIS_VERSION="5.5.11"
+ARG WHOIS_VERSION="5.5.12"
 
 
 
-FROM fscm/centos:stream as build
+FROM fscm/centos:stream-9 as build
 
 ARG __BUILD_DIR__
 ARG __WORK_DIR__
@@ -83,6 +83,10 @@ RUN \
         > /dev/null && \
     make > /dev/null && \
     make install > /dev/null && \
+    # Applications linked against all musl public header files and crt files are allowed to
+    # omit copyright notice and permission notice otherwise required by the license.
+    # This is documented in the "COPYRIGHT" file.
+    # https://git.musl-libc.org/cgit/musl/tree/COPYRIGHT
     cd ~- && \
     rm -rf "${__SOURCE_DIR__}/musl" && \
 # libxcrypt
@@ -110,6 +114,8 @@ RUN \
         --disable-shared && \
     make > /dev/null && \
     make install > /dev/null && \
+    install --directory --owner="${__USER__}" --group="${__USER__}" --mode=0755 "${__BUILD_DIR__}/licenses/libxcrypt" && \
+    (cd .. && find ./ -type f -a \( -iname '*LICENS*' -o -iname '*COPYING*' \) -exec cp --parents {} "${__BUILD_DIR__}/licenses/libxcrypt" ';') && \
     cd ~- && \
     rm -rf "${__SOURCE_DIR__}/libxcrypt" && \
 # whois (mkpasswd)
@@ -125,7 +131,7 @@ RUN \
         > /dev/null && \
     install --owner="${__USER__}" --group="${__USER__}" --mode=0755 --target-directory="${__BUILD_DIR__}/usr/bin" './mkpasswd' && \
     install --directory --owner="${__USER__}" --group="${__USER__}" --mode=0755 "${__BUILD_DIR__}/licenses/whois" && \
-    install --owner="${__USER__}" --group="${__USER__}" --mode=0644 --target-directory="${__BUILD_DIR__}/licenses/whois" './COPYING' && \
+    find ./ -type f -a \( -iname '*LICENS*' -o -iname '*COPYING*' \) -exec cp --parents {} "${__BUILD_DIR__}/licenses/whois" ';' && \
     cd ~- && \
     rm -rf "${__SOURCE_DIR__}/whois" && \
 # stripping
@@ -134,6 +140,10 @@ RUN \
 # licenses
     echo '--> project licenses' && \
     install --owner="${__USER__}" --group="${__USER__}" --mode=0644 --target-directory="${__BUILD_DIR__}/licenses" "${__WORK_DIR__}/LICENSE" && \
+# check version
+    echo '--> mkpasswd version' && \
+    chroot "${__BUILD_DIR__}" /usr/bin/mkpasswd --version && \
+    arch && \
 # done
     echo '--> all done!'
 
